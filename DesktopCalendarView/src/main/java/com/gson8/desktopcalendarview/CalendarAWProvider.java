@@ -22,6 +22,7 @@ public class CalendarAWProvider extends AppWidgetProvider {
     public static final String EXTRA_ITEM_MONTH = "com.gson8.desktopcalendarview.EXTRA_ITEM_MONTH";
     public static final String EXTRA_ITEM_YEAR = "com.gson8.desktopcalendarview.EXTRA_ITEM_YEAR";
     public static final String EXTRA_ITEM_DAY = "com.gson8.desktopcalendarview.EXTRA_ITEM_DAY";
+    public static final String EXTRA_POSITION = "com.gson8.desktopcalendarview.EXTRA_POSITION";
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager,
@@ -66,6 +67,9 @@ public class CalendarAWProvider extends AppWidgetProvider {
             int day = intent.getIntExtra(EXTRA_ITEM_DAY, 1);
             int month = intent.getIntExtra(EXTRA_ITEM_MONTH, 1);
             int year = intent.getIntExtra(EXTRA_ITEM_YEAR, 1900);
+            int pos = intent.getIntExtra(EXTRA_POSITION, 7);
+
+            Toast.makeText(context, "pos:" + pos, Toast.LENGTH_SHORT).show();
 
             RemoteViews remoteViews =
                     new RemoteViews(context.getPackageName(), R.layout.layout_calendar);
@@ -79,7 +83,10 @@ public class CalendarAWProvider extends AppWidgetProvider {
             Intent serviceIntent = new Intent(context, CalendarAWService.class);
             remoteViews.setRemoteAdapter(R.id.gridview, serviceIntent);
 
+            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.gridview);
+
             appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
+
 
         } else if(action.equals(ACTION_LUNAR)) {
             Toast.makeText(context, "Lunar Click", Toast.LENGTH_SHORT).show();

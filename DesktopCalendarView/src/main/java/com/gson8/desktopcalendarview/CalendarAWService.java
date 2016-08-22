@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
@@ -38,6 +39,9 @@ public class CalendarAWService extends RemoteViewsService {
         public RemoteViews getViewAt(int position) {
             DateBean bean = mDateData.get(position);
 
+
+            Log.e(TAG, "getViewAt: " + position);
+
             // 获取 item_calendarxml 对应的RemoteViews
             RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.item_calendar);
 
@@ -49,6 +53,7 @@ public class CalendarAWService extends RemoteViewsService {
 //                rv.setInt(R.id.item_layout, "setBackgroundColor", Color.BLUE);
 
                 Intent fillInIntent = new Intent();
+                fillInIntent.putExtra(CalendarAWProvider.EXTRA_POSITION, position);
                 fillInIntent
                         .putExtra(CalendarAWProvider.EXTRA_ITEM_FULL_LUNAR, bean.getFullLunar());
                 fillInIntent.putExtra(CalendarAWProvider.EXTRA_ITEM_DAY, bean.getDay());
@@ -128,6 +133,9 @@ public class CalendarAWService extends RemoteViewsService {
 
         @Override
         public void onDataSetChanged() {
+
+
+            Log.e(TAG, "onDataSetChanged: ");
 
         }
 
