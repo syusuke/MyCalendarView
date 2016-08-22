@@ -74,9 +74,10 @@ public class CalendarAWProvider extends AppWidgetProvider {
             remoteViews.setTextColor(R.id.tv_gvitem_lunar, Color.RED);
             remoteViews.setTextColor(R.id.tv_gvitem_date, Color.RED);
 
+            remoteViews.setInt(R.id.item_layout, "setBackgroundColor", Color.BLUE);
 
-//            Intent serviceIntent = new Intent(context, CalendarAWService.class);
-//            remoteViews.setRemoteAdapter(R.id.gridview, serviceIntent);
+            Intent serviceIntent = new Intent(context, CalendarAWService.class);
+            remoteViews.setRemoteAdapter(R.id.gridview, serviceIntent);
 
             appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
 

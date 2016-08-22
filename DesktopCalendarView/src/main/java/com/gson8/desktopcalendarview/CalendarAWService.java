@@ -42,8 +42,11 @@ public class CalendarAWService extends RemoteViewsService {
             RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.item_calendar);
 
             if(bean != null) {
+
                 rv.setTextViewText(R.id.tv_gvitem_date, mDateData.get(position).getDay() + "");
                 rv.setTextViewText(R.id.tv_gvitem_lunar, mDateData.get(position).getShowLunarDay());
+
+//                rv.setInt(R.id.item_layout, "setBackgroundColor", Color.BLUE);
 
                 Intent fillInIntent = new Intent();
                 fillInIntent
@@ -57,6 +60,9 @@ public class CalendarAWService extends RemoteViewsService {
                     rv.setTextColor(R.id.tv_gvitem_date, Color.RED);
                     rv.setTextColor(R.id.tv_gvitem_lunar, Color.RED);
                 }
+                rv.addView(R.id.item_layout,
+                        new RemoteViews(mContext.getPackageName(),
+                                R.layout.item_loading));
                 rv.setOnClickFillInIntent(R.id.item_layout, fillInIntent);
             } else {
                 rv.setTextViewText(R.id.tv_gvitem_date, "");
