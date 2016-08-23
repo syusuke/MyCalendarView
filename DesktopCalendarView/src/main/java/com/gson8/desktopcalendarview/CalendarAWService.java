@@ -20,6 +20,8 @@ public class CalendarAWService extends RemoteViewsService {
         return new CalendarAWRemoteViewsFactory(this, intent);
     }
 
+
+
     private class CalendarAWRemoteViewsFactory implements RemoteViewsFactory {
 
         private Context mContext;
@@ -39,40 +41,40 @@ public class CalendarAWService extends RemoteViewsService {
         public RemoteViews getViewAt(int position) {
             DateBean bean = mDateData.get(position);
 
-
-            Log.e(TAG, "getViewAt: " + position);
+            //Log.e(TAG, "getViewAt: " + position);
 
             // 获取 item_calendarxml 对应的RemoteViews
             RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.item_calendar);
 
             if(bean != null) {
-
                 rv.setTextViewText(R.id.tv_gvitem_date, mDateData.get(position).getDay() + "");
                 rv.setTextViewText(R.id.tv_gvitem_lunar, mDateData.get(position).getShowLunarDay());
-
-//                rv.setInt(R.id.item_layout, "setBackgroundColor", Color.BLUE);
 
                 Intent fillInIntent = new Intent();
                 fillInIntent.putExtra(CalendarAWProvider.EXTRA_POSITION, position);
                 fillInIntent
                         .putExtra(CalendarAWProvider.EXTRA_ITEM_FULL_LUNAR, bean.getFullLunar());
-                fillInIntent.putExtra(CalendarAWProvider.EXTRA_ITEM_DAY, bean.getDay());
-                fillInIntent.putExtra(CalendarAWProvider.EXTRA_ITEM_MONTH, bean.getYear());
-                fillInIntent.putExtra(CalendarAWProvider.EXTRA_ITEM_YEAR, bean.getMonth());
 
                 int it = DateUtils.isToday(bean);
                 if(it != -1 && it == position) {
-                    rv.setTextColor(R.id.tv_gvitem_date, Color.RED);
-                    rv.setTextColor(R.id.tv_gvitem_lunar, Color.RED);
+                    rv.setTextColor(R.id.tv_gvitem_date, Color.WHITE);
+                    rv.setTextColor(R.id.tv_gvitem_lunar, Color.WHITE);
+                    rv.setInt(R.id.item_layout, "setBackgroundResource", R.drawable.bg_item);
+                    //setBackgroundColor
                 }
-                rv.addView(R.id.item_layout,
-                        new RemoteViews(mContext.getPackageName(),
-                                R.layout.item_loading));
                 rv.setOnClickFillInIntent(R.id.item_layout, fillInIntent);
             } else {
                 rv.setTextViewText(R.id.tv_gvitem_date, "");
                 rv.setTextViewText(R.id.tv_gvitem_lunar, "");
             }
+
+            Intent i
+                    = new Intent();
+            i.setClass(mContext, CalendarAWService.class);
+
+
+            sendBroadcast(i);
+
             return rv;
         }
 
@@ -133,10 +135,7 @@ public class CalendarAWService extends RemoteViewsService {
 
         @Override
         public void onDataSetChanged() {
-
-
             Log.e(TAG, "onDataSetChanged: ");
-
         }
 
         @Override

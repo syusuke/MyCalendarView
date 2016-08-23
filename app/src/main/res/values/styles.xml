@@ -9,5 +9,12 @@
     </style>
 
 
+    <style name="Item">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">match_parent</item>
+    </style>
+
+
 
 </resources>

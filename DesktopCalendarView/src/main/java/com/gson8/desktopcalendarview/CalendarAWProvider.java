@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
@@ -64,29 +63,18 @@ public class CalendarAWProvider extends AppWidgetProvider {
                     AppWidgetManager.INVALID_APPWIDGET_ID);
             String fullLunar = intent.getStringExtra(EXTRA_ITEM_FULL_LUNAR);
 
-            int day = intent.getIntExtra(EXTRA_ITEM_DAY, 1);
-            int month = intent.getIntExtra(EXTRA_ITEM_MONTH, 1);
-            int year = intent.getIntExtra(EXTRA_ITEM_YEAR, 1900);
             int pos = intent.getIntExtra(EXTRA_POSITION, 7);
 
-            Toast.makeText(context, "pos:" + pos, Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "GridView Click Position= " + pos);
 
             RemoteViews remoteViews =
                     new RemoteViews(context.getPackageName(), R.layout.layout_calendar);
             remoteViews.setTextViewText(R.id.tv_title_lunar, fullLunar);
 
-            remoteViews.setTextColor(R.id.tv_gvitem_lunar, Color.RED);
-            remoteViews.setTextColor(R.id.tv_gvitem_date, Color.RED);
-
-            remoteViews.setInt(R.id.item_layout, "setBackgroundColor", Color.BLUE);
-
             Intent serviceIntent = new Intent(context, CalendarAWService.class);
             remoteViews.setRemoteAdapter(R.id.gridview, serviceIntent);
-
             appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.gridview);
-
             appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
-
 
         } else if(action.equals(ACTION_LUNAR)) {
             Toast.makeText(context, "Lunar Click", Toast.LENGTH_SHORT).show();
