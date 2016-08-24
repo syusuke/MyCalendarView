@@ -18,8 +18,6 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.View;
 import android.widget.RemoteViews;
 
 import java.util.Calendar;
@@ -150,6 +148,8 @@ public class CalendarProvider extends AppWidgetProvider {
             thisMonth = cal.get(Calendar.MONTH);
         }
 
+        rv.setTextViewText(R.id.tv_title, android.text.format.DateFormat.format("yyyy - MM", cal));
+        rv.setTextViewText(R.id.tv_month, cal.get(Calendar.MONTH) + 1 + "");
 
         if(!mini) {
             cal.set(Calendar.DAY_OF_MONTH, 1);
@@ -160,10 +160,7 @@ public class CalendarProvider extends AppWidgetProvider {
             cal.add(Calendar.DAY_OF_MONTH, 1 - todayDayOfWeek);
         }
 
-        rv.setInt(R.id.ll_week_title, "setVisibility", View.VISIBLE);
         rv.removeAllViews(R.id.ll_calendar_layout);
-
-        boolean isContainerToday = false;
 
         for(int week = 0; week < numWeeks; week++) {
             RemoteViews rowRv = new RemoteViews(context.getPackageName(), R.layout.a_row_week);
@@ -177,7 +174,6 @@ public class CalendarProvider extends AppWidgetProvider {
                         new RemoteViews(context.getPackageName(), R.layout.item_normal);
                 if(inMonth) {
 //                    cellLayoutResId = R.layout.cell_day_this_month;
-                    Log.e(TAG, "drawWidget: 正常");
                 } else {
                     cellRv.setTextColor(R.id.tv_item_date, Color.GRAY);
                     cellRv.setTextColor(R.id.tv_item_lunar, Color.GRAY);
@@ -186,34 +182,22 @@ public class CalendarProvider extends AppWidgetProvider {
                 if(isToday) {
 //                    cellRv.setInt(R.id.item_layout, "setBackgroundColor", Color.GREEN);
                     cellRv.setInt(R.id.item_layout, "setBackgroundResource", R.drawable.bg_today);
-                    rv.setTextViewText(R.id.tv_title_lunar, new Lunar(cal).toString());
-                    rv.setTextViewText(R.id.tv_month, cal.get(Calendar.MONTH) + 1 + "");
-                    isContainerToday = true;
                 }
 
                 cellRv.setTextViewText(R.id.tv_item_date,
                         Integer.toString(cal.get(Calendar.DAY_OF_MONTH)));
                 cellRv.setTextViewText(R.id.tv_item_lunar, new Lunar(cal).getLunar());
-               /* if(isFirstOfMonth) {
-                    cellRv.setTextViewText(R.id.month_label, DateFormat.format("MMM", cal));
-                }*/
+
                 rowRv.addView(R.id.row_week_container, cellRv);
                 cal.add(Calendar.DAY_OF_MONTH, 1);
             }
-
             rv.addView(R.id.ll_calendar_layout, rowRv);
-        }
-        if(!isContainerToday) {
-            Lunar lunar = new Lunar(cal);
-            rv.setTextViewText(R.id.tv_title_lunar,
-                    lunar.getLunarYear() + "年" + lunar.getLunarMonth());
-            rv.setTextViewText(R.id.tv_month, cal.get(Calendar.MONTH) + 1 + "");
         }
 
         Intent intent = new Intent(context, CalendarProvider.class).setAction(ACTION_NOW_MONTH);
         PendingIntent pendingIntent =
                 PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        rv.setOnClickPendingIntent(R.id.tv_title_lunar, pendingIntent);
+        rv.setOnClickPendingIntent(R.id.tv_title, pendingIntent);
 
         rv.setOnClickPendingIntent(R.id.iv_priv_month, PendingIntent.getBroadcast(context, 0,
                 new Intent(context, CalendarProvider.class).setAction(ACTION_PRIV_MONTH),
