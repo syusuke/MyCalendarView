@@ -7,22 +7,22 @@ package com.gson8.mycalendarview;
  * Description: null
  */
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 
 public class CalendarProvider extends AppWidgetProvider {
     public static final String ACTION_PRIV_MONTH = "action.PRIV";
@@ -34,19 +34,12 @@ public class CalendarProvider extends AppWidgetProvider {
 
     public static final String TAG = "CalendarProvider-TEST";
 
-    private List<DateBean> mLists;
-
-    public CalendarProvider() {
-        mLists = new ArrayList<>();
-    }
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
-        Log.e(TAG, "onUpdate: " + SystemClock.currentThreadTimeMillis());
 
         for(int appWidgetId : appWidgetIds) {
-            addDateData(context);
             drawWidget(context, appWidgetId);
         }
     }
@@ -56,9 +49,9 @@ public class CalendarProvider extends AppWidgetProvider {
         super.onReceive(context, intent);
 
         String action = intent.getAction();
-        Log.e(TAG, "onReceive: " + action);
 
         if(action.equals(ACTION_PRIV_MONTH)) {
+            //上一个月
             SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
             Calendar calendar = Calendar.getInstance();
 
@@ -77,7 +70,7 @@ public class CalendarProvider extends AppWidgetProvider {
 
             reDrawWidget(context);
         } else if(action.equals(ACTION_NEXT_MONTH)) {
-
+            // 下一个月
             SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
             Calendar calendar = Calendar.getInstance();
             int curYear = sp.getInt(YEAR_EXTRA, calendar.get(Calendar.YEAR));
@@ -99,42 +92,10 @@ public class CalendarProvider extends AppWidgetProvider {
             sp.edit().remove(YEAR_EXTRA).remove(MONTH_EXTRA).apply();
 
             reDrawWidget(context);
-        } else if(action.equals(Intent.ACTION_DATE_CHANGED)) {
-
-            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-            Calendar calendar = Calendar.getInstance();
-
-            int curYear = sp.getInt(YEAR_EXTRA, calendar.get(Calendar.YEAR));
-            int curMonth = sp.getInt(MONTH_EXTRA, calendar.get(Calendar.MONTH));
-
-            calendar.set(Calendar.DAY_OF_MONTH, 1);
-            calendar.set(Calendar.MONTH, curMonth);
-            calendar.set(Calendar.YEAR, curYear);
-
-            sp.edit().putInt(YEAR_EXTRA, calendar.get(Calendar.YEAR))
-                    .putInt(MONTH_EXTRA, calendar.get(Calendar.MONTH))
-                    .apply();
-
-            Log.e("时间变化", "onReceive: 时间变化");
-
-            reDrawWidget(context);
         } else if(action.equals(Intent.ACTION_TIME_CHANGED)) {
 
             SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-            Calendar calendar = Calendar.getInstance();
-
-            int curYear = sp.getInt(YEAR_EXTRA, calendar.get(Calendar.YEAR));
-            int curMonth = sp.getInt(MONTH_EXTRA, calendar.get(Calendar.MONTH));
-
-            calendar.set(Calendar.DAY_OF_MONTH, 1);
-            calendar.set(Calendar.MONTH, curMonth);
-            calendar.set(Calendar.YEAR, curYear);
-
-            sp.edit().putInt(YEAR_EXTRA, calendar.get(Calendar.YEAR))
-                    .putInt(MONTH_EXTRA, calendar.get(Calendar.MONTH))
-                    .apply();
-
-            Log.e("时间变化", "onReceive: ----------time change");
+            sp.edit().remove(YEAR_EXTRA).remove(MONTH_EXTRA).apply();
 
             reDrawWidget(context);
         }
@@ -144,13 +105,11 @@ public class CalendarProvider extends AppWidgetProvider {
     public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager,
                                           int appWidgetId, Bundle newOptions) {
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions);
-        addDateData(context);
         drawWidget(context, appWidgetId);
     }
 
 
     private void reDrawWidget(Context context) {
-        addDateData(context);
         int[] appWidgetIds = AppWidgetManager.getInstance(context).getAppWidgetIds(
                 new ComponentName(context, CalendarProvider.class));
         for(int appWidgetId : appWidgetIds) {
@@ -159,101 +118,112 @@ public class CalendarProvider extends AppWidgetProvider {
     }
 
     private void drawWidget(Context context, int appWidgetId) {
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        Resources res = context.getResources();
+        Bundle widgetOptions = appWidgetManager.getAppWidgetOptions(appWidgetId);
+        boolean mini = false;
+        int numWeeks = 6;
+        if(widgetOptions != null) {
+            int minWidthDp = widgetOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+            int minHeightDp = widgetOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
+            mini = minHeightDp <= res.getInteger(R.integer.max_height_mini_view_dp);
+            if(mini) {
+                numWeeks = minHeightDp <= res.getInteger(R.integer.max_height_mini_view_1_row_dp)
+                        ? 1 : 2;
+            }
+        }
 
-        Log.e(TAG, "drawWidget: " + System.currentTimeMillis());
-
-        AppWidgetManager mAppWidgetManager = AppWidgetManager.getInstance(context);
-
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
 
-        DateBean db = DateUtils.getTodayBean();
+        Calendar cal = Calendar.getInstance();
+        int today = cal.get(Calendar.DAY_OF_YEAR);
+        int todayYear = cal.get(Calendar.YEAR);
+        int thisMonth;
+        if(!mini) {
+            thisMonth = sp.getInt(MONTH_EXTRA, cal.get(Calendar.MONTH));
+            int thisYear = sp.getInt(YEAR_EXTRA, cal.get(Calendar.YEAR));
+            cal.set(Calendar.DAY_OF_MONTH, 1);
+            cal.set(Calendar.MONTH, thisMonth);
+            cal.set(Calendar.YEAR, thisYear);
+        } else {
+            thisMonth = cal.get(Calendar.MONTH);
+        }
 
+
+        if(!mini) {
+            cal.set(Calendar.DAY_OF_MONTH, 1);
+            int monthStartDayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+            cal.add(Calendar.DAY_OF_MONTH, 1 - monthStartDayOfWeek);
+        } else {
+            int todayDayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+            cal.add(Calendar.DAY_OF_MONTH, 1 - todayDayOfWeek);
+        }
+
+        rv.setInt(R.id.ll_week_title, "setVisibility", View.VISIBLE);
         rv.removeAllViews(R.id.ll_calendar_layout);
 
-        Log.e("TAGGGGG",
-                "drawWidget: For Loop start" + mLists.size() + "sys" + System.currentTimeMillis());
+        boolean isContainerToday = false;
 
-        Calendar calendar = Calendar.getInstance();
-        for(int i = 0, size = mLists.size() / 6; i < size; i++) {
-
+        for(int week = 0; week < numWeeks; week++) {
             RemoteViews rowRv = new RemoteViews(context.getPackageName(), R.layout.a_row_week);
+            for(int day = 0; day < 7; day++) {
+                boolean inMonth = cal.get(Calendar.MONTH) == thisMonth;
+                boolean inYear = cal.get(Calendar.YEAR) == todayYear;
+                boolean isToday = inYear && inMonth && (cal.get(Calendar.DAY_OF_YEAR) == today);
 
-            int jS = (mLists.size() - i * 7 >= 6 ? 7 : mLists.size() - i * 7);
-            Log.e("测试", "drawWidget: Js= " + jS);
-            for(int j = 0; j < jS; j++) {
-
-                int index = i * 7 + j;
-                Log.e("测试11",
-                        (i * 7 + j) + "|||" + "i=" + i + "--j=" + j + "..." + mLists.size() + "," +
-                                index);
-                DateBean b = mLists.get(index);
-
-                RemoteViews itemRv =
+                boolean isFirstOfMonth = cal.get(Calendar.DAY_OF_MONTH) == 1;
+                RemoteViews cellRv =
                         new RemoteViews(context.getPackageName(), R.layout.item_normal);
-                if(b == null) {
-                    itemRv.setTextViewText(R.id.tv_item_date, "");
-                    itemRv.setTextViewText(R.id.tv_item_lunar, "");
+                if(inMonth) {
+//                    cellLayoutResId = R.layout.cell_day_this_month;
+                    Log.e(TAG, "drawWidget: 正常");
                 } else {
-
-                    boolean inMonth = (calendar.get(Calendar.MONTH)) == db.getMonth();
-                    boolean inYear = calendar.get(Calendar.YEAR) == db.getYear();
-                    boolean isToday =
-                            inYear && inMonth &&
-                                    (calendar.get(Calendar.DAY_OF_MONTH) == db.getDay());
-                    Log.e(TAG, "是不是今天: " + inMonth + "," + inYear + "," + isToday);
-                    Log.e(TAG, "是不是今天: " + b.getMonth() + "," + b.getYear() + "," + b.getDay());
-
-                    if(isToday) {
-//                        itemRv.setInt(R.id.item_layout, "setBackgroundColor", Color.RED);
-                        itemRv.setInt(R.id.item_layout, "setBackgroundResource",
-                                R.drawable.bg_today);
-                        rv.setTextViewText(R.id.tv_title_lunar, db.getFullLunar());
-                        rv.setTextViewText(R.id.tv_month, "" + db.getMonth() + "");
-                    }
-                    itemRv.setTextViewText(R.id.tv_item_date, b.getDay() + "");
-                    itemRv.setTextViewText(R.id.tv_item_lunar, b.getShowLunarDay());
+                    cellRv.setTextColor(R.id.tv_item_date, Color.GRAY);
+                    cellRv.setTextColor(R.id.tv_item_lunar, Color.GRAY);
                 }
-                rowRv.addView(R.id.row_week_container, itemRv);
+
+                if(isToday) {
+//                    cellRv.setInt(R.id.item_layout, "setBackgroundColor", Color.GREEN);
+                    cellRv.setInt(R.id.item_layout, "setBackgroundResource", R.drawable.bg_today);
+                    rv.setTextViewText(R.id.tv_title_lunar, new Lunar(cal).toString());
+                    rv.setTextViewText(R.id.tv_month, cal.get(Calendar.MONTH) + 1 + "");
+                    isContainerToday = true;
+                }
+
+                cellRv.setTextViewText(R.id.tv_item_date,
+                        Integer.toString(cal.get(Calendar.DAY_OF_MONTH)));
+                cellRv.setTextViewText(R.id.tv_item_lunar, new Lunar(cal).getLunar());
+               /* if(isFirstOfMonth) {
+                    cellRv.setTextViewText(R.id.month_label, DateFormat.format("MMM", cal));
+                }*/
+                rowRv.addView(R.id.row_week_container, cellRv);
+                cal.add(Calendar.DAY_OF_MONTH, 1);
             }
 
             rv.addView(R.id.ll_calendar_layout, rowRv);
         }
-        rv.setInt(R.id.ll_week_title, "setVisibility", View.VISIBLE);   //日~ 六
-
-
-        mAppWidgetManager.updateAppWidget(appWidgetId, rv);
-    }
-
-    private void addDateData(Context context) {
-
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        Calendar calendar = Calendar.getInstance();
-
-        int year = sp.getInt(YEAR_EXTRA, calendar.get(Calendar.YEAR));
-        int month = 1 + sp.getInt(MONTH_EXTRA, calendar.get(Calendar.MONTH));
-
-        Log.e(TAG, "addDateData: " + year + ".." + month);
-
-        mLists.clear();
-        int aMonthNum = DateUtils.getDaysByYearMonth(year, month);
-        int weekNum = DateUtils.getWeek(year, month);
-
-        int index = 0;
-
-        for(int i = 0; i < aMonthNum + weekNum - 1; i++) {
-            if(index < weekNum - 1) {
-                mLists.add(null);
-                index++;
-            } else {
-                int day = i - weekNum + 2;
-                mLists.add(new DateBean(year, month, day));
-            }
+        if(!isContainerToday) {
+            Lunar lunar = new Lunar(cal);
+            rv.setTextViewText(R.id.tv_title_lunar,
+                    lunar.getLunarYear() + "年" + lunar.getLunarMonth());
+            rv.setTextViewText(R.id.tv_month, cal.get(Calendar.MONTH) + 1 + "");
         }
 
-        while(mLists.size() < 42) {
-            mLists.add(null);
-        }
-    }
+        Intent intent = new Intent(context, CalendarProvider.class).setAction(ACTION_NOW_MONTH);
+        PendingIntent pendingIntent =
+                PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        rv.setOnClickPendingIntent(R.id.tv_title_lunar, pendingIntent);
 
+        rv.setOnClickPendingIntent(R.id.iv_priv_month, PendingIntent.getBroadcast(context, 0,
+                new Intent(context, CalendarProvider.class).setAction(ACTION_PRIV_MONTH),
+                PendingIntent.FLAG_UPDATE_CURRENT));
+
+        rv.setOnClickPendingIntent(R.id.iv_next_month, PendingIntent.getBroadcast(context, 0,
+                new Intent(context, CalendarProvider.class).setAction(ACTION_NEXT_MONTH),
+                PendingIntent.FLAG_UPDATE_CURRENT));
+
+        appWidgetManager.updateAppWidget(appWidgetId, rv);
+    }
 
 }

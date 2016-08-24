@@ -14,7 +14,7 @@ public class DateUtils {
     public static Calendar composeDate2Calendar(int year, int month, int day) {
         Calendar date = Calendar.getInstance();
         date.set(Calendar.YEAR, year);
-        date.set(Calendar.MONTH, month - 1);
+        date.set(Calendar.MONTH, month);
         date.set(Calendar.DAY_OF_MONTH, day);
         return date;
     }
