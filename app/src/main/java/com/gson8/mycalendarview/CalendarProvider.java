@@ -31,8 +31,6 @@ public class CalendarProvider extends AppWidgetProvider {
 
     public static final String YEAR_EXTRA = "year_extra";
     public static final String MONTH_EXTRA = "month_extra";
-    public static final String DAY_EXTRA = "day_extra";
-    public static final String LUNAR_EXTRA = "lunar_extra";
 
     public static final String TAG = "CalendarProvider-TEST";
 
@@ -76,7 +74,7 @@ public class CalendarProvider extends AppWidgetProvider {
             sp.edit().putInt(YEAR_EXTRA, calendar.get(Calendar.YEAR))
                     .putInt(MONTH_EXTRA, calendar.get(Calendar.MONTH))
                     .apply();
-            addDateData(context);
+
             reDrawWidget(context);
         } else if(action.equals(ACTION_NEXT_MONTH)) {
 
@@ -93,13 +91,51 @@ public class CalendarProvider extends AppWidgetProvider {
             sp.edit().putInt(YEAR_EXTRA, calendar.get(Calendar.YEAR))
                     .putInt(MONTH_EXTRA, calendar.get(Calendar.MONTH))
                     .apply();
-            addDateData(context);
+
             reDrawWidget(context);
         } else if(action.equals(ACTION_NOW_MONTH)) {
             //回到当前月
             SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
             sp.edit().remove(YEAR_EXTRA).remove(MONTH_EXTRA).apply();
-            addDateData(context);
+
+            reDrawWidget(context);
+        } else if(action.equals(Intent.ACTION_DATE_CHANGED)) {
+
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+            Calendar calendar = Calendar.getInstance();
+
+            int curYear = sp.getInt(YEAR_EXTRA, calendar.get(Calendar.YEAR));
+            int curMonth = sp.getInt(MONTH_EXTRA, calendar.get(Calendar.MONTH));
+
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            calendar.set(Calendar.MONTH, curMonth);
+            calendar.set(Calendar.YEAR, curYear);
+
+            sp.edit().putInt(YEAR_EXTRA, calendar.get(Calendar.YEAR))
+                    .putInt(MONTH_EXTRA, calendar.get(Calendar.MONTH))
+                    .apply();
+
+            Log.e("时间变化", "onReceive: 时间变化");
+
+            reDrawWidget(context);
+        } else if(action.equals(Intent.ACTION_TIME_CHANGED)) {
+
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+            Calendar calendar = Calendar.getInstance();
+
+            int curYear = sp.getInt(YEAR_EXTRA, calendar.get(Calendar.YEAR));
+            int curMonth = sp.getInt(MONTH_EXTRA, calendar.get(Calendar.MONTH));
+
+            calendar.set(Calendar.DAY_OF_MONTH, 1);
+            calendar.set(Calendar.MONTH, curMonth);
+            calendar.set(Calendar.YEAR, curYear);
+
+            sp.edit().putInt(YEAR_EXTRA, calendar.get(Calendar.YEAR))
+                    .putInt(MONTH_EXTRA, calendar.get(Calendar.MONTH))
+                    .apply();
+
+            Log.e("时间变化", "onReceive: ----------time change");
+
             reDrawWidget(context);
         }
     }
@@ -108,11 +144,13 @@ public class CalendarProvider extends AppWidgetProvider {
     public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager,
                                           int appWidgetId, Bundle newOptions) {
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions);
+        addDateData(context);
         drawWidget(context, appWidgetId);
     }
 
 
     private void reDrawWidget(Context context) {
+        addDateData(context);
         int[] appWidgetIds = AppWidgetManager.getInstance(context).getAppWidgetIds(
                 new ComponentName(context, CalendarProvider.class));
         for(int appWidgetId : appWidgetIds) {
@@ -129,10 +167,6 @@ public class CalendarProvider extends AppWidgetProvider {
         RemoteViews rv = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
 
         DateBean db = DateUtils.getTodayBean();
-
-        rv.setTextViewText(R.id.tv_title_lunar, db.getFullLunar()); //农历标题
-        rv.setInt(R.id.ll_week_title, "setVisibility", View.VISIBLE);   //日~ 六
-        rv.setTextViewText(R.id.tv_month, db.getMonth() + "");
 
         rv.removeAllViews(R.id.ll_calendar_layout);
 
@@ -160,13 +194,12 @@ public class CalendarProvider extends AppWidgetProvider {
                     itemRv.setTextViewText(R.id.tv_item_date, "");
                     itemRv.setTextViewText(R.id.tv_item_lunar, "");
                 } else {
-                    boolean inMonth = (1 + calendar.get(Calendar.MONTH)) == b.getMonth();
-                    boolean inYear = calendar.get(Calendar.YEAR) == b.getYear();
 
+                    boolean inMonth = (calendar.get(Calendar.MONTH)) == db.getMonth();
+                    boolean inYear = calendar.get(Calendar.YEAR) == db.getYear();
                     boolean isToday =
                             inYear && inMonth &&
-                                    (calendar.get(Calendar.DAY_OF_MONTH) == b.getDay() + 2 -
-                                            DateUtils.getWeek(b.getYear(), b.getMonth()));
+                                    (calendar.get(Calendar.DAY_OF_MONTH) == db.getDay());
                     Log.e(TAG, "是不是今天: " + inMonth + "," + inYear + "," + isToday);
                     Log.e(TAG, "是不是今天: " + b.getMonth() + "," + b.getYear() + "," + b.getDay());
 
@@ -174,17 +207,19 @@ public class CalendarProvider extends AppWidgetProvider {
 //                        itemRv.setInt(R.id.item_layout, "setBackgroundColor", Color.RED);
                         itemRv.setInt(R.id.item_layout, "setBackgroundResource",
                                 R.drawable.bg_today);
-                        Log.e(TAG, "drawWidget: 今天");
-                        //setBackgroundColor
-                        //setBackgroundResource
+                        rv.setTextViewText(R.id.tv_title_lunar, db.getFullLunar());
+                        rv.setTextViewText(R.id.tv_month, "" + db.getMonth() + "");
                     }
                     itemRv.setTextViewText(R.id.tv_item_date, b.getDay() + "");
                     itemRv.setTextViewText(R.id.tv_item_lunar, b.getShowLunarDay());
                 }
                 rowRv.addView(R.id.row_week_container, itemRv);
             }
+
             rv.addView(R.id.ll_calendar_layout, rowRv);
         }
+        rv.setInt(R.id.ll_week_title, "setVisibility", View.VISIBLE);   //日~ 六
+
 
         mAppWidgetManager.updateAppWidget(appWidgetId, rv);
     }
@@ -215,7 +250,7 @@ public class CalendarProvider extends AppWidgetProvider {
             }
         }
 
-        while(mLists.size() < 36) {
+        while(mLists.size() < 42) {
             mLists.add(null);
         }
     }
