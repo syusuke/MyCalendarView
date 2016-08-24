@@ -1,1 +1,4 @@
-# ×ÀÃæÈÕÀú¿Ø¼şAppWidget
+# App æ¡Œé¢æ—¥å†æ§ä»¶
+>App é¡¹ç›®çš„ç­¾åæ–‡ä»¶: syusuke/Zyj7810
+
+@[ä¸‹è½½1.0  APP](Arts/app-release-1.0.apk)
