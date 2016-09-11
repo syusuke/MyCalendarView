@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.gson8.mycalendarview.receives.TimeTickReceiver;
 
@@ -27,14 +26,12 @@ public class TimeService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        Log.e(TAG, "onBind: ");
         return null;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-
         mFilter = new IntentFilter();
         mFilter.addAction(Intent.ACTION_TIME_TICK);
         mFilter.addAction(Intent.ACTION_TIME_CHANGED);
@@ -45,7 +42,6 @@ public class TimeService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
         return super.onStartCommand(intent, flags, startId);
     }
 

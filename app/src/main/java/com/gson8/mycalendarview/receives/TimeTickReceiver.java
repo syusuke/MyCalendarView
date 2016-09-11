@@ -37,8 +37,10 @@ public class TimeTickReceiver extends BroadcastReceiver {
             SimpleDateFormat sdf = new SimpleDateFormat("HHmmss");
 
             if(sdf.format(now).contains("00000")) {
+
                 if(Global.DEBUG)
                     Log.e(TAG, "onReceive: 下一天啦  ... ");
+
                 Intent i = new Intent();
                 i.setAction(CalendarProvider.ACTION_NEW_DAY);
                 context.sendBroadcast(i);
@@ -51,6 +53,7 @@ public class TimeTickReceiver extends BroadcastReceiver {
                         new SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
                                 .format(System.currentTimeMillis()));
             }
+
             Intent i = new Intent();
             i.setAction(CalendarProvider.ACTION_HANDLE_CHANGE_DATE);
             context.sendBroadcast(i);
