@@ -1,9 +1,12 @@
 package com.gson8.mycalendarview;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.CalendarView;
 import android.widget.Toast;
+
+import com.gson8.mycalendarview.services.TimeService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,5 +27,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
             }
         });
+        Intent intent = new Intent(this, TimeService.class);
+        startService(intent);
     }
 }

@@ -18,8 +18,10 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.RemoteViews;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class CalendarProvider extends AppWidgetProvider {
@@ -27,11 +29,21 @@ public class CalendarProvider extends AppWidgetProvider {
     public static final String ACTION_NEXT_MONTH = "action.NEXT";
     public static final String ACTION_NOW_MONTH = "action.NOW";
 
+    public static final String ACTION_NEW_DAY = "com.gson8.mycalendarview.action.new_day";
+    public static final String ACTION_HANDLE_CHANGE_DATE =
+            "com.gson8.mycalendarview.action.handle.date";
+
     public static final String YEAR_EXTRA = "year_extra";
     public static final String MONTH_EXTRA = "month_extra";
 
     public static final String TAG = "CalendarProvider-TEST";
 
+
+    @Override
+    public void onEnabled(Context context) {
+        super.onEnabled(context);
+        Log.e(TAG, "添加桌面");
+    }
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -90,13 +102,48 @@ public class CalendarProvider extends AppWidgetProvider {
             sp.edit().remove(YEAR_EXTRA).remove(MONTH_EXTRA).apply();
 
             reDrawWidget(context);
-        } else if(action.equals(Intent.ACTION_TIME_CHANGED)) {
+        } else if(action.equals(Intent.ACTION_TIME_TICK)) {
+
+            Log.e("mView", "TIME: " +
+                    new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(System.currentTimeMillis()));
+
+        } else if(action.equals(ACTION_HANDLE_CHANGE_DATE)) {
+
+            Log.e("mView", "ACTION_HANDLE_CHANGE_DATE: " +
+                    new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(System.currentTimeMillis()));
+
+
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+            sp.edit().remove(YEAR_EXTRA).remove(MONTH_EXTRA).apply();
+            reDrawWidget(context);
+        } else if(action.equals(ACTION_NEW_DAY)) {
+            Log.e("mView", "ACTION_NEW_DAY: " +
+                    new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(System.currentTimeMillis()));
+
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+            sp.edit().remove(YEAR_EXTRA).remove(MONTH_EXTRA).apply();
+            reDrawWidget(context);
+        }
+
+
+        /*else if(action.equals(Intent.ACTION_TIME_CHANGED)) {
 
             SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
             sp.edit().remove(YEAR_EXTRA).remove(MONTH_EXTRA).apply();
 
+
+            Log.e("mView", "TIME: " +
+                    new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(System.currentTimeMillis()));
+
+
             reDrawWidget(context);
-        }
+        } else if(action.equals(Intent.ACTION_DATE_CHANGED)) {
+            Log.e("mView", "DATE: " +
+                    new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(System.currentTimeMillis()));
+        } else if(action.equals(Intent.ACTION_TIME_TICK)) {
+            Log.e("mView", "TICK: " +
+                    new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(System.currentTimeMillis()));
+        }*/
     }
 
     @Override
