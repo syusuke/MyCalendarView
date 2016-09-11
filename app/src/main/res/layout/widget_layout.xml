@@ -30,7 +30,8 @@
             android:paddingBottom="6dp"
             android:paddingTop="6dp"
             android:textColor="@color/textColor"
-            android:textSize="24sp"/>
+            android:textSize="24sp"
+            android:textStyle="bold"/>
 
         <ImageView
             android:id="@+id/iv_next_month"
@@ -136,8 +137,7 @@
             android:gravity="center"
             android:orientation="vertical">
         </LinearLayout>
-
-
+        
     </RelativeLayout>
 
 </LinearLayout>
