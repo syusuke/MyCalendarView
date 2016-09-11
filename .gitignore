@@ -1055,3 +1055,4 @@ TimeServiceDynamic/build/intermediates/res/resources-debug-androidTest.ap_
 TimeServiceDynamic/build/intermediates/res/resources-debug.ap_
 TimeServiceDynamic/build/intermediates/symbols/debug/R.txt
 TimeServiceDynamic/build/outputs/logs/manifest-merger-debug-report.txt
+*.apk

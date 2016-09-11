@@ -21,6 +21,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
+import com.gson8.mycalendarview.calutils.Lauar;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -233,7 +235,9 @@ public class CalendarProvider extends AppWidgetProvider {
 
                 cellRv.setTextViewText(R.id.tv_item_date,
                         Integer.toString(cal.get(Calendar.DAY_OF_MONTH)));
-                cellRv.setTextViewText(R.id.tv_item_lunar, new Lunar(cal).getLunar());
+//                cellRv.setTextViewText(R.id.tv_item_lunar, new Lunar(cal).getLunar());
+                cellRv.setTextViewText(R.id.tv_item_lunar, new Lauar(cal).getMyLauar());
+//                cellRv.setTextViewText(R.id.tv_item_lunar, "16/正月");
 
                 rowRv.addView(R.id.row_week_container, cellRv);
                 cal.add(Calendar.DAY_OF_MONTH, 1);

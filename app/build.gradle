@@ -8,8 +8,8 @@ android {
         applicationId "com.gson8.mycalendarview"
         minSdkVersion 17
         targetSdkVersion 23
-        versionCode 4
-        versionName "1.6"
+        versionCode 5
+        versionName "1.8"
     }
     buildTypes {
         release {
