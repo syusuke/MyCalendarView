@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
+import com.gson8.mycalendarview.receives.ScreenActionReceiver;
 import com.gson8.mycalendarview.receives.TimeTickReceiver;
 
 public class TimeService extends Service {
@@ -21,6 +22,9 @@ public class TimeService extends Service {
     //监听时间变化的 这个receiver只能动态创建
     private TimeTickReceiver mTimeTickReceiver;
     private IntentFilter mFilter;
+
+    private ScreenActionReceiver mScreenActionReceiver;
+    private IntentFilter mScreenFilter;
 
 
     @Nullable
@@ -37,6 +41,12 @@ public class TimeService extends Service {
         mFilter.addAction(Intent.ACTION_TIME_CHANGED);
         mTimeTickReceiver = new TimeTickReceiver();
         registerReceiver(mTimeTickReceiver, mFilter);
+
+
+        mScreenFilter = new IntentFilter();
+        mScreenFilter.addAction(Intent.ACTION_SCREEN_ON);
+        mScreenActionReceiver = new ScreenActionReceiver();
+        registerReceiver(mScreenActionReceiver, mScreenFilter);
     }
 
 
@@ -49,5 +59,6 @@ public class TimeService extends Service {
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mTimeTickReceiver);
+        unregisterReceiver(mScreenActionReceiver);
     }
 }
